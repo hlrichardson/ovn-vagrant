@@ -23,3 +23,10 @@ exit
 vagrant ssh compute2
 sudo ovs-vsctl show
 exit
+
+When done: vagrant destroy
+
+See also:
+    http://www.flaviof.com/blog2/post/main/just-ovn-nodes/
+    http://blog.spinhirne.com/2016/09/a-primer-on-ovn.html
+
