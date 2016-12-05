@@ -1,5 +1,4 @@
-# ovn-vagrant
-Basic vagrant setup for an OVN cluster
+# ovn-vagrant: Virtual OVN Cluster using Vagrant
 
 Install vagrant and libvirt provider:
 
