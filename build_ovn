@@ -19,6 +19,8 @@ cd ovs
 ./configure --enable-Werror
 make rpm-fedora RPMBUILD_OPT="--without check"  || { echo >&2 "ovn build failed"; exit 1; }
 make rpm-fedora-kmod || { echo >&2 "ovn datapath build failed"; exit 1; }
+
+mkdir -p ${OVN_PKG_DIR}
 rm -rf ${OVN_PKG_DIR}/*.rpm
 cp -v $(find . -name '*.rpm') $OVN_PKG_DIR
 
