@@ -1,0 +1,32 @@
+#!/bin/bash
+set -e
+OVN_REPO=$1
+OVN_BRANCH=$2
+OVN_PKG_DIR=/vagrant/pkgs
+OVN_DEP_PKGS="gcc make python-devel openssl-devel kernel-devel \
+              graphviz kernel-debug-devel autoconf automake \
+              redhat-rpm-config rpm-build rpmdevtools \
+              bash-completion libtool \
+              groff libcap-ng-devel python-twisted-core \
+              selinux-policy-devel python-six desktop-file-utils git \
+              python-twisted-web"
+
+sudo yum install -y $OVN_DEP_PKGS
+
+git clone -b $OVN_BRANCH $OVN_REPO ovs
+cd ovs
+./boot.sh
+./configure --enable-Werror
+make rpm-fedora RPMBUILD_OPT="--without check"  || { echo >&2 "ovn build failed"; exit 1; }
+make rpm-fedora-kmod || { echo >&2 "ovn datapath build failed"; exit 1; }
+rm -rf ${OVN_PKG_DIR}/*.rpm
+cp -v $(find . -name '*.rpm') $OVN_PKG_DIR
+
+sudo rpm -i ${OVN_PKG_DIR}/openvswitch-kmod-2*.rpm \
+            ${OVN_PKG_DIR}/python-openvswitch-2*.rpm \
+            ${OVN_PKG_DIR}/openvswitch-2*.rpm \
+            ${OVN_PKG_DIR}/openvswitch-ovn-common-2*.rpm \
+            ${OVN_PKG_DIR}/openvswitch-ovn-host-2*.rpm \
+            ${OVN_PKG_DIR}/openvswitch-ovn-central-2*.rpm \
+    || { echo >&2 "$@"; echo >&2 "ERROR: failed to install packages"; exit 1; }
+

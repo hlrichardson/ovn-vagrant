@@ -1,0 +1,32 @@
+#!/bin/bash
+set -e
+
+sleep 10 # FIXME, wait for ovsdb
+
+# Provider network setup
+PHYS_DEV=eth2
+sudo ovs-vsctl --may-exist add-br br-provider -- set bridge br-provider protocols=OpenFlow13
+PROVADDR=$(ip -4 addr show $PHYS_DEV | grep -oP "(?<=inet )[^\s]*(?=\s)")
+if [[ -n "$PROVADDR" ]] ; then
+    sudo ip addr flush dev $PHYS_DEV
+    sudo ip addr add $PROVADDR dev br-provider
+    sudo ip link set br-provider up
+    sudo ovs-vsctl --may-exist add-port br-provider $PHYS_DEV
+fi
+
+
+OVN_DB_IP=$(tac /etc/hosts | awk '/\scentral/ {print $1;exit;}')
+OVN_SB_DB_PORT=6642
+
+OVN_SYS_UUID=$(hostname --short)
+HOST_IP=$(ip -4 addr show eth1 | grep -oP "(?<=inet ).*(?=/)")
+OVN_SB_REMOTE="tcp:${OVN_DB_IP}:${OVN_SB_DB_PORT}"
+
+sudo ovs-vsctl --no-wait init
+sudo ovs-vsctl --no-wait set open_vswitch . system-type="devstack-mock"
+sudo ovs-vsctl --no-wait set open_vswitch . external-ids:system-id="$OVN_SYS_UUID"
+
+sudo ovs-vsctl --no-wait set open_vswitch . external-ids:ovn-bridge="br-int"
+sudo ovs-vsctl --no-wait set open_vswitch . external-ids:ovn-encap-ip="$HOST_IP"
+sudo ovs-vsctl --no-wait set open_vswitch . external-ids:ovn-encap-type="geneve"
+sudo ovs-vsctl --no-wait set open_vswitch . external-ids:ovn-remote="$OVN_SB_REMOTE"
