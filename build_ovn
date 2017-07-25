@@ -9,7 +9,7 @@ OVN_DEP_PKGS="gcc make python-devel openssl-devel kernel-devel \
               bash-completion libtool \
               groff libcap-ng-devel python-twisted-core \
               selinux-policy-devel python-six desktop-file-utils git \
-              python-twisted-web"
+              python-twisted-web python-sphinx"
 
 sudo yum install -y $OVN_DEP_PKGS
 
